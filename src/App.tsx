@@ -4,8 +4,12 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import './App.css'
 import { Dashboard } from './pages/dashboard/dashboard'
 import { Login } from './pages/login/login';
+import { ManutencoesPage } from './pages/manutencoes/manutencoes';
+import { VeiculosPage } from './pages/veiculos/veiculos';
+import { ViagensPage } from './pages/viagens/viagens';
 
 const authStorageKey = 'logitrack-authenticated';
+type AppPage = 'dashboard' | 'manutencoes' | 'veiculos' | 'viagens';
 
 const theme = createTheme({
   palette: {
@@ -39,21 +43,36 @@ const theme = createTheme({
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem(authStorageKey) === 'true');
+  const [currentPage, setCurrentPage] = useState<AppPage>('dashboard');
 
   const handleLogin = () => {
     localStorage.setItem(authStorageKey, 'true');
     setIsAuthenticated(true);
+    setCurrentPage('dashboard');
   };
 
   const handleLogout = () => {
     localStorage.removeItem(authStorageKey);
     setIsAuthenticated(false);
+    setCurrentPage('dashboard');
   };
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      {isAuthenticated ? <Dashboard onLogout={handleLogout} /> : <Login onLogin={handleLogin} />}
+      {isAuthenticated ? (
+        currentPage === 'dashboard' ? (
+          <Dashboard onLogout={handleLogout} onNavigate={setCurrentPage} />
+        ) : currentPage === 'veiculos' ? (
+          <VeiculosPage onLogout={handleLogout} onNavigate={setCurrentPage} />
+        ) : currentPage === 'viagens' ? (
+          <ViagensPage onLogout={handleLogout} onNavigate={setCurrentPage} />
+        ) : (
+          <ManutencoesPage onLogout={handleLogout} onNavigate={setCurrentPage} />
+        )
+      ) : (
+        <Login onLogin={handleLogin} />
+      )}
     </ThemeProvider>
   )
 }

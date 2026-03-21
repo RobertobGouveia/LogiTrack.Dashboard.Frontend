@@ -12,14 +12,30 @@ import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 
-const pages = ['Dashboard', 'Veículos', 'Viagens', 'Manutenções'];
+type AppPage = 'dashboard' | 'manutencoes' | 'veiculos' | 'viagens';
+
+const pages = [
+  { label: 'Dashboard', key: 'dashboard' as const },
+  { label: 'Veiculos', key: 'veiculos' as const },
+  { label: 'Viagens', key: 'viagens' as const },
+  { label: 'Manutenções', key: 'manutencoes' as const },
+];
 
 type ResponsiveAppBarProps = {
   onLogout?: () => void;
+  onNavigate?: (page: AppPage) => void;
+  activePage?: AppPage;
 };
 
-function ResponsiveAppBar({ onLogout }: ResponsiveAppBarProps) {
+function ResponsiveAppBar({ onLogout, onNavigate, activePage = 'dashboard' }: ResponsiveAppBarProps) {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
+
+  const handleNavigate = (page?: AppPage) => {
+    handleCloseNavMenu();
+    if (page && onNavigate) {
+      onNavigate(page);
+    }
+  };
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
@@ -88,8 +104,8 @@ function ResponsiveAppBar({ onLogout }: ResponsiveAppBarProps) {
               sx={{ display: { xs: 'block', md: 'none' } }}
             >
               {pages.map((page) => (
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
+                <MenuItem key={page.label} onClick={() => handleNavigate(page.key)} disabled={!page.key}>
+                  <Typography sx={{ textAlign: 'center' }}>{page.label}</Typography>
                 </MenuItem>
               ))}
             </Menu>
@@ -116,11 +132,18 @@ function ResponsiveAppBar({ onLogout }: ResponsiveAppBarProps) {
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
             {pages.map((page) => (
               <Button
-                key={page}
-                onClick={handleCloseNavMenu}
-                sx={{ my: 2, color: 'white', display: 'block' }}
+                key={page.label}
+                onClick={() => handleNavigate(page.key)}
+                disabled={!page.key}
+                variant={page.key && page.key === activePage ? 'outlined' : 'text'}
+                sx={{
+                  my: 2,
+                  color: 'white',
+                  display: 'block',
+                  borderColor: 'rgba(255,255,255,0.5)',
+                }}
               >
-                {page}
+                {page.label}
               </Button>
             ))}
           </Box>

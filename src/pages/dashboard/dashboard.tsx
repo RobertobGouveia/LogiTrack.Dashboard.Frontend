@@ -13,11 +13,14 @@ import { Card } from "../../components/card/card";
 import ResponsiveAppBar from "../../components/header/header";
 import { MainContainer } from "./dashboard.style";
 
+type AppPage = 'dashboard' | 'manutencoes' | 'veiculos' | 'viagens';
+
 type DashboardProps = {
   onLogout?: () => void;
+  onNavigate?: (page: AppPage) => void;
 };
 
-export function Dashboard({ onLogout }: DashboardProps) {
+export function Dashboard({ onLogout, onNavigate }: DashboardProps) {
   const [data, setData] = useState<DashboardResponse | null>(null);
 
   useEffect(() => {
@@ -30,7 +33,7 @@ export function Dashboard({ onLogout }: DashboardProps) {
 
   return (
     <MainContainer>
-      <ResponsiveAppBar onLogout={onLogout} />
+      <ResponsiveAppBar onLogout={onLogout} onNavigate={onNavigate} activePage="dashboard" />
 
       <Container maxWidth="lg" sx={{ pt: 4, pb: 6 }}>
         <Typography variant="h4" fontWeight={700} gutterBottom>
