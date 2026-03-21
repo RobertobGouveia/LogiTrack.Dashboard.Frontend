@@ -175,7 +175,6 @@ export function VeiculosPage({ onLogout, onNavigate }: VeiculosPageProps) {
         <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="space-between" alignItems={{ xs: 'flex-start', md: 'center' }}>
           <Box>
             <Typography variant="h4" fontWeight={700}>Veículos</Typography>
-            <Typography variant="subtitle1" color="text.secondary">Gerencie o CRUD de veículos.</Typography>
           </Box>
 
           <Button variant="contained" startIcon={<AddRoundedIcon />} onClick={openCreate}>

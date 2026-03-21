@@ -8,6 +8,10 @@ import Menu from '@mui/material/Menu';
 import MenuIcon from '@mui/icons-material/Menu';
 import Container from '@mui/material/Container';
 import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
@@ -29,6 +33,7 @@ type ResponsiveAppBarProps = {
 
 function ResponsiveAppBar({ onLogout, onNavigate, activePage = 'dashboard' }: ResponsiveAppBarProps) {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
+  const [confirmLogoutOpen, setConfirmLogoutOpen] = React.useState(false);
 
   const handleNavigate = (page?: AppPage) => {
     handleCloseNavMenu();
@@ -45,19 +50,33 @@ function ResponsiveAppBar({ onLogout, onNavigate, activePage = 'dashboard' }: Re
     setAnchorElNav(null);
   };
 
+  const openLogoutDialog = () => {
+    setConfirmLogoutOpen(true);
+  };
+
+  const closeLogoutDialog = () => {
+    setConfirmLogoutOpen(false);
+  };
+
+  const confirmLogout = () => {
+    onLogout?.();
+    setConfirmLogoutOpen(false);
+  };
+
   return (
-    <AppBar
-      position="static"
-      color="transparent"
-      elevation={0}
-      sx={{
-        borderBottom: '1px solid rgba(255,255,255,0.45)',
-        bgcolor: 'rgba(12, 28, 52, 0.84)',
-        backdropFilter: 'blur(14px)',
-      }}
-    >
-      <Container maxWidth="xl">
-        <Toolbar disableGutters>
+    <>
+      <AppBar
+        position="static"
+        color="transparent"
+        elevation={0}
+        sx={{
+          borderBottom: '1px solid rgba(255,255,255,0.45)',
+          bgcolor: 'rgba(12, 28, 52, 0.84)',
+          backdropFilter: 'blur(14px)',
+        }}
+      >
+        <Container maxWidth="xl">
+          <Toolbar disableGutters>
           <Typography
             variant="h6"
             noWrap
@@ -148,23 +167,35 @@ function ResponsiveAppBar({ onLogout, onNavigate, activePage = 'dashboard' }: Re
             ))}
           </Box>
 
-          {onLogout ? (
-            <Button
-              color="inherit"
-              onClick={onLogout}
-              startIcon={<LogoutRoundedIcon />}
-              sx={{
-                borderRadius: 999,
-                px: 2,
-                bgcolor: 'rgba(255,255,255,0.08)',
-              }}
-            >
-              Sair
-            </Button>
-          ) : null}
-        </Toolbar>
-      </Container>
-    </AppBar>
+            {onLogout ? (
+              <Button
+                color="inherit"
+                onClick={openLogoutDialog}
+                startIcon={<LogoutRoundedIcon />}
+                sx={{
+                  borderRadius: 999,
+                  px: 2,
+                  bgcolor: 'rgba(255,255,255,0.08)',
+                }}
+              >
+                Sair
+              </Button>
+            ) : null}
+          </Toolbar>
+        </Container>
+      </AppBar>
+
+      <Dialog open={confirmLogoutOpen} onClose={closeLogoutDialog} maxWidth="xs" fullWidth>
+        <DialogTitle>Confirmar saída</DialogTitle>
+        <DialogContent>
+          <Typography>Tem certeza que deseja sair?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeLogoutDialog}>Cancelar</Button>
+          <Button color="error" variant="contained" onClick={confirmLogout}>Sair</Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }
 export default ResponsiveAppBar;
