@@ -21,11 +21,9 @@ export interface CreateViagemPayload {
   veiculoId: number;
   origem: string;
   destino: string;
-  dataInicio: string;
-  dataFim?: string;
-  distanciaKm: number;
-  custo: number;
-  status: string;
+  dataSaida: string;
+  dataChegada?: string;
+  kmPercorrido: number;
 }
 
 export interface UpdateViagemPayload {

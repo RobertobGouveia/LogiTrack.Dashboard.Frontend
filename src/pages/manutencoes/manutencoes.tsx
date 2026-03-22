@@ -25,6 +25,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { api } from '../../services/api';
 import type { CreateManutencaoPayload, Manutencao, UpdateManutencaoPayload } from '../../type/manutencao';
+import type { Veiculo } from '../../type/veiculo';
 import ResponsiveAppBar from '../../components/header/header';
 import { MainContainer } from '../dashboard/dashboard.style';
 
@@ -37,6 +38,7 @@ type ManutencoesPageProps = {
 
 type FormState = {
   veiculoId: string;
+  veiculoPlaca: string;
   dataInicio: string;
   dataFinalizacao: string;
   tipoServico: string;
@@ -46,10 +48,11 @@ type FormState = {
 
 const ENDPOINT = '/manutencoes';
 
-const statusOptions = ['PENDENTE', 'EM_ANDAMENTO', 'CONCLUIDA', 'CANCELADA'];
+const statusOptions = ['PENDENTE', 'CONCLUIDA'];
 
 const initialForm: FormState = {
   veiculoId: '',
+  veiculoPlaca: '',
   dataInicio: '',
   dataFinalizacao: '',
   tipoServico: '',
@@ -75,6 +78,7 @@ function toPayload(form: FormState): CreateManutencaoPayload {
 
 export function ManutencoesPage({ onLogout, onNavigate }: ManutencoesPageProps) {
   const [rows, setRows] = useState<Manutencao[]>([]);
+  const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
@@ -99,8 +103,18 @@ export function ManutencoesPage({ onLogout, onNavigate }: ManutencoesPageProps) 
     }
   };
 
+  const fetchVeiculos = async () => {
+    try {
+      const response = await api.get<Veiculo[]>('/veiculos');
+      setVeiculos(response.data || []);
+    } catch {
+      setVeiculos([]);
+    }
+  };
+
   useEffect(() => {
     fetchData();
+    fetchVeiculos();
   }, []);
 
   const openCreate = () => {
@@ -113,6 +127,7 @@ export function ManutencoesPage({ onLogout, onNavigate }: ManutencoesPageProps) 
     setEditingItem(item);
     setForm({
       veiculoId: String(item.veiculoId ?? item.veiculo?.id ?? ''),
+      veiculoPlaca: item.veiculo?.placa ?? '',
       dataInicio: toInputDate(item.dataInicio),
       dataFinalizacao: toInputDate(item.dataFinalizacao),
       tipoServico: item.tipoServico,
@@ -139,18 +154,29 @@ export function ManutencoesPage({ onLogout, onNavigate }: ManutencoesPageProps) 
   };
 
   const handleSave = async () => {
-    if (!form.veiculoId || !form.dataInicio || !form.tipoServico || !form.custoEstimado || !form.status) {
+    const veiculoObrigatorio = editingItem ? !form.veiculoId : !form.veiculoPlaca;
+    if (veiculoObrigatorio || !form.dataInicio || !form.tipoServico || !form.custoEstimado || !form.status) {
       setError('Preencha os campos obrigatorios: veiculo, data inicio, tipo, custo e status.');
       return;
     }
 
+    let resolvedForm = form;
+    if (!editingItem) {
+      const veiculoSelecionado = veiculos.find((v) => v.placa === form.veiculoPlaca);
+      if (!veiculoSelecionado) {
+        setError('Nao foi possivel encontrar o veiculo da placa selecionada.');
+        return;
+      }
+      resolvedForm = { ...form, veiculoId: String(veiculoSelecionado.id) };
+    }
+
     try {
       if (editingItem) {
-        const payload: UpdateManutencaoPayload = toPayload(form);
+        const payload: UpdateManutencaoPayload = toPayload(resolvedForm);
         await api.patch(`${ENDPOINT}/${editingItem.id}`, payload);
         setFeedback('Manutenção atualizada com sucesso.');
       } else {
-        await api.post(ENDPOINT, toPayload(form));
+        await api.post(ENDPOINT, toPayload(resolvedForm));
         setFeedback('Manutenção criada com sucesso.');
       }
 
@@ -269,13 +295,24 @@ export function ManutencoesPage({ onLogout, onNavigate }: ManutencoesPageProps) 
               />
             ) : (
               <TextField
-                label="ID do veiculo"
-                type="number"
-                value={form.veiculoId}
-                onChange={(event) => setForm((prev) => ({ ...prev, veiculoId: event.target.value }))}
+                select
+                label="Placa do veiculo"
+                value={form.veiculoPlaca}
+                onChange={(event) => setForm((prev) => ({ ...prev, veiculoPlaca: event.target.value }))}
                 fullWidth
                 required
-              />
+              >
+                {veiculos.length === 0 ? (
+                  <MenuItem value="" disabled>
+                    Nenhum veiculo disponivel
+                  </MenuItem>
+                ) : null}
+                {veiculos.map((veiculo) => (
+                  <MenuItem key={veiculo.id} value={veiculo.placa}>
+                    {veiculo.placa}
+                  </MenuItem>
+                ))}
+              </TextField>
             )}
             <TextField
               label="Tipo de servico"

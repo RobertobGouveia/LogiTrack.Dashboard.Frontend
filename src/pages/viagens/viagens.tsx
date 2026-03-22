@@ -59,9 +59,21 @@ const initialForm: FormState = {
   custo: '',
 };
 
-function toInputDate(value?: string | null) {
+function toInputDateTime(value?: string | null) {
   if (!value) return '';
-  return value.slice(0, 10);
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const localDate = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${localDate}-${month}-${day}T${hours}:${minutes}`;
+}
+
+function toApiDateTime(value: string) {
+  if (!value) return '';
+  return value.length === 16 ? `${value}:00` : value;
 }
 
 function formatDate(value?: string | null) {
@@ -102,7 +114,18 @@ function normalizeViagens(data: unknown): Viagem[] {
   });
 }
 
-function toPayload(form: FormState, veiculoId: number): CreateViagemPayload {
+function toCreatePayload(form: FormState, veiculoId: number): CreateViagemPayload {
+  return {
+    veiculoId,
+    origem: form.origem.trim(),
+    destino: form.destino.trim(),
+    dataSaida: toApiDateTime(form.dataInicio),
+    dataChegada: form.dataFim ? toApiDateTime(form.dataFim) : undefined,
+    kmPercorrido: Number(form.distanciaKm),
+  };
+}
+
+function toUpdatePayload(form: FormState, veiculoId: number): UpdateViagemPayload {
   return {
     veiculoId,
     origem: form.origem.trim(),
@@ -169,8 +192,8 @@ export function ViagensPage({ onLogout, onNavigate }: ViagensPageProps) {
       veiculoPlaca: item.veiculo?.placa ?? '',
       origem: item.origem,
       destino: item.destino,
-      dataInicio: toInputDate(item.dataInicio ?? item.dataSaida),
-      dataFim: toInputDate(item.dataFim ?? item.dataChegada),
+      dataInicio: toInputDateTime(item.dataInicio ?? item.dataSaida),
+      dataFim: toInputDateTime(item.dataFim ?? item.dataChegada),
       distanciaKm: String(item.distanciaKm ?? item.kmPercorrida ?? ''),
       custo: String(item.custo),
     });
@@ -194,7 +217,7 @@ export function ViagensPage({ onLogout, onNavigate }: ViagensPageProps) {
   };
 
   const handleSave = async () => {
-    if (!form.origem || !form.destino || !form.dataInicio || !form.distanciaKm || !form.custo) {
+    if (!form.origem || !form.destino || !form.dataInicio || !form.distanciaKm) {
       setError('Preencha os campos obrigatorios da viagem.');
       return;
     }
@@ -215,19 +238,20 @@ export function ViagensPage({ onLogout, onNavigate }: ViagensPageProps) {
       veiculoId = veiculoSelecionado.id;
     }
 
-    const payload = toPayload(form, veiculoId);
-    if (Number.isNaN(payload.veiculoId) || Number.isNaN(payload.distanciaKm) || Number.isNaN(payload.custo)) {
-      setError('Confira os campos numericos (veiculo, distancia e custo).');
+    const createPayload = toCreatePayload(form, veiculoId);
+    const updatePayload = toUpdatePayload(form, veiculoId);
+
+    if (Number.isNaN(veiculoId) || Number.isNaN(createPayload.kmPercorrido)) {
+      setError('Confira os campos numericos (veiculo e distancia).');
       return;
     }
 
     try {
       if (editingItem) {
-        const updatePayload: UpdateViagemPayload = payload;
         await api.patch(`${ENDPOINT}/${editingItem.id}`, updatePayload);
         setFeedback('Viagem atualizada com sucesso.');
       } else {
-        await api.post(ENDPOINT, payload);
+        await api.post(ENDPOINT, createPayload);
         setFeedback('Viagem criada com sucesso.');
       }
 
@@ -378,8 +402,8 @@ export function ViagensPage({ onLogout, onNavigate }: ViagensPageProps) {
               required
             />
             <TextField
-              label="Data de inicio"
-              type="date"
+              label="Data e hora de saida"
+              type="datetime-local"
               value={form.dataInicio}
               onChange={(event) => setForm((prev) => ({ ...prev, dataInicio: event.target.value }))}
               InputLabelProps={{ shrink: true }}
@@ -387,8 +411,8 @@ export function ViagensPage({ onLogout, onNavigate }: ViagensPageProps) {
               required
             />
             <TextField
-              label="Data de fim"
-              type="date"
+              label="Data e hora de chegada"
+              type="datetime-local"
               value={form.dataFim}
               onChange={(event) => setForm((prev) => ({ ...prev, dataFim: event.target.value }))}
               InputLabelProps={{ shrink: true }}
@@ -399,14 +423,6 @@ export function ViagensPage({ onLogout, onNavigate }: ViagensPageProps) {
               type="number"
               value={form.distanciaKm}
               onChange={(event) => setForm((prev) => ({ ...prev, distanciaKm: event.target.value }))}
-              fullWidth
-              required
-            />
-            <TextField
-              label="Custo"
-              type="number"
-              value={form.custo}
-              onChange={(event) => setForm((prev) => ({ ...prev, custo: event.target.value }))}
               fullWidth
               required
             />

@@ -5,7 +5,7 @@ import Stack from '@mui/material/Stack';
 
 type Props = {
   title: string;
-  value: string | number;
+  value?: string | number;
   extra?: string | number;
   subtitle?: string;
 };
@@ -27,7 +27,7 @@ export function Card({ title, value, extra, subtitle }: Props) {
             </Typography>
           )}
           {extra && (
-            <Typography variant="caption" color="primary" fontWeight={600}>
+            <Typography variant="body2" color="text.secondary">
               {extra}
             </Typography>
           )}

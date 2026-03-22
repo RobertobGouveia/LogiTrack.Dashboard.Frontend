@@ -56,9 +56,9 @@ export function Dashboard({ onLogout, onNavigate }: DashboardProps) {
             subtitle={data.rankingUtilizacao ? `${data.rankingUtilizacao[1]} km rodados` : "-"}
           />
           <Card
-            title="Volume por Categoria"
-            value={data.volumePorCategoria[0] ? `${data.volumePorCategoria[0][0]}: ${data.volumePorCategoria[0][1]}` : "-"}
-            extra={data.volumePorCategoria[1] ? `${data.volumePorCategoria[1][0]}: ${data.volumePorCategoria[1][1]}` : "-"}
+            title="Veículos por Categoria"
+            extra={data.volumePorCategoria[0] ? `${data.volumePorCategoria[0][0]}: ${data.volumePorCategoria[0][1]}` : "-"}
+            subtitle={data.volumePorCategoria[1] ? `${data.volumePorCategoria[1][0]}: ${data.volumePorCategoria[1][1]}` : "-"}
           />
         </Box>
 
