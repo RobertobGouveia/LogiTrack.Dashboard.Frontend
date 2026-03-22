@@ -13,7 +13,6 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
-import AdbIcon from '@mui/icons-material/Adb';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 
 type AppPage = 'dashboard' | 'manutencoes' | 'veiculos' | 'viagens';
@@ -129,7 +128,6 @@ function ResponsiveAppBar({ onLogout, onNavigate, activePage = 'dashboard' }: Re
               ))}
             </Menu>
           </Box>
-          <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
           <Typography
             variant="h5"
             noWrap
@@ -146,7 +144,7 @@ function ResponsiveAppBar({ onLogout, onNavigate, activePage = 'dashboard' }: Re
               textDecoration: 'none',
             }}
           >
-            LOGO
+            LogiTrack
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
             {pages.map((page) => (
