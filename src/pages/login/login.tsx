@@ -68,7 +68,7 @@ export function Login({ onLogin }: LoginProps) {
               </Avatar>
               <Box>
                 <Typography variant="overline" color="primary.main" fontWeight={700}>
-                  LogiTrack Platform
+                  LogiTrack Pro
                 </Typography>
                 <Typography variant="h2" sx={{ fontSize: { xs: '2.4rem', md: '3.4rem' }, fontWeight: 800, lineHeight: 1.05 }}>
                   Gestão logística com leitura imediata do que importa.
