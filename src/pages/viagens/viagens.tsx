@@ -23,7 +23,7 @@ import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { api } from '../../services/api';
-import type { CreateViagemPayload, UpdateViagemPayload, Viagem } from '../../type/viagem';
+import type { Viagem } from '../../type/viagem';
 import type { Veiculo } from '../../type/veiculo';
 import ResponsiveAppBar from '../../components/header/header';
 import { MainContainer } from '../dashboard/dashboard.style';
@@ -114,30 +114,6 @@ function normalizeViagens(data: unknown): Viagem[] {
   });
 }
 
-function toCreatePayload(form: FormState, veiculoId: number): CreateViagemPayload {
-  return {
-    veiculoId,
-    origem: form.origem.trim(),
-    destino: form.destino.trim(),
-    dataSaida: toApiDateTime(form.dataInicio),
-    dataChegada: form.dataFim ? toApiDateTime(form.dataFim) : undefined,
-    kmPercorrido: Number(form.distanciaKm),
-  };
-}
-
-function toUpdatePayload(form: FormState, veiculoId: number): UpdateViagemPayload {
-  return {
-    veiculoId,
-    origem: form.origem.trim(),
-    destino: form.destino.trim(),
-    dataInicio: form.dataInicio,
-    dataFim: form.dataFim || undefined,
-    distanciaKm: Number(form.distanciaKm),
-    custo: Number(form.custo),
-    status: 'PROGRAMADA',
-  };
-}
-
 export function ViagensPage({ onLogout, onNavigate }: ViagensPageProps) {
   const [rows, setRows] = useState<Viagem[]>([]);
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
@@ -222,39 +198,32 @@ export function ViagensPage({ onLogout, onNavigate }: ViagensPageProps) {
       return;
     }
 
-    let veiculoId = Number(form.veiculoId);
-    if (!editingItem) {
-      if (!form.veiculoPlaca) {
-        setError('Selecione a placa do veiculo para criar a viagem.');
-        return;
-      }
-
-      const veiculoSelecionado = veiculos.find((item) => item.placa === form.veiculoPlaca);
-      if (!veiculoSelecionado) {
-        setError('Nao foi possivel encontrar o veiculo da placa selecionada.');
-        return;
-      }
-
-      veiculoId = veiculoSelecionado.id;
-    }
-
-    const createPayload = toCreatePayload(form, veiculoId);
-    const updatePayload = toUpdatePayload(form, veiculoId);
-
-    if (Number.isNaN(veiculoId) || Number.isNaN(createPayload.kmPercorrido)) {
-      setError('Confira os campos numericos (veiculo e distancia).');
-      return;
-    }
-
     try {
       if (editingItem) {
-        await api.patch(`${ENDPOINT}/${editingItem.id}`, updatePayload);
+        await api.patch(`${ENDPOINT}/${editingItem.id}`, {
+          dataSaida: toApiDateTime(form.dataInicio),
+          dataChegada: form.dataFim ? toApiDateTime(form.dataFim) : undefined,
+          origem: form.origem.trim(),
+          destino: form.destino.trim(),
+          kmPercorrida: Number(form.distanciaKm),
+        });
         setFeedback('Viagem atualizada com sucesso.');
       } else {
-        await api.post(ENDPOINT, createPayload);
+        const veiculoSelecionado = veiculos.find((v) => v.placa === form.veiculoPlaca);
+        if (!veiculoSelecionado) {
+          setError('Selecione a placa do veiculo para criar a viagem.');
+          return;
+        }
+        await api.post(ENDPOINT, {
+          veiculoId: veiculoSelecionado.id,
+          dataSaida: toApiDateTime(form.dataInicio),
+          dataChegada: form.dataFim ? toApiDateTime(form.dataFim) : undefined,
+          origem: form.origem.trim(),
+          destino: form.destino.trim(),
+          kmPercorrida: Number(form.distanciaKm),
+        });
         setFeedback('Viagem criada com sucesso.');
       }
-
       closeDialog();
       fetchData();
     } catch {

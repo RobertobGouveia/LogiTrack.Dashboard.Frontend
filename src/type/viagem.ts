@@ -23,7 +23,7 @@ export interface CreateViagemPayload {
   destino: string;
   dataSaida: string;
   dataChegada?: string;
-  kmPercorrido: number;
+  kmPercorrida: number;
 }
 
 export interface UpdateViagemPayload {
