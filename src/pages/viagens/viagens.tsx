@@ -40,10 +40,9 @@ type FormState = {
   veiculoPlaca: string;
   origem: string;
   destino: string;
-  dataInicio: string;
-  dataFim: string;
-  distanciaKm: string;
-  custo: string;
+  dataSaida: string;
+  dataChegada: string;
+  kmPercorrido: string;
 };
 
 const ENDPOINT = '/viagens';
@@ -53,10 +52,9 @@ const initialForm: FormState = {
   veiculoPlaca: '',
   origem: '',
   destino: '',
-  dataInicio: '',
-  dataFim: '',
-  distanciaKm: '',
-  custo: '',
+  dataSaida: '',
+  dataChegada: '',
+  kmPercorrido: '',
 };
 
 function toInputDateTime(value?: string | null) {
@@ -102,14 +100,9 @@ function normalizeViagens(data: unknown): Viagem[] {
       veiculo: row.veiculo,
       origem: row.origem ?? '-',
       destino: row.destino ?? '-',
-      dataInicio: row.dataInicio ?? row.dataSaida ?? '',
-      dataFim: row.dataFim ?? row.dataChegada ?? null,
-      distanciaKm: Number(row.distanciaKm ?? row.kmPercorrida ?? 0),
-      dataSaida: row.dataSaida,
-      dataChegada: row.dataChegada,
-      kmPercorrida: row.kmPercorrida,
-      custo: Number(row.custo ?? 0),
-      status: row.status ?? '-',
+      dataSaida: row.dataSaida ?? row.dataSaida ?? '',
+      dataChegada: row.dataChegada ?? row.dataChegada ?? null,
+      kmPercorrido: row.kmPercorrido ?? row.kmPercorrido ?? 0,
     };
   });
 }
@@ -168,10 +161,9 @@ export function ViagensPage({ onLogout, onNavigate }: ViagensPageProps) {
       veiculoPlaca: item.veiculo?.placa ?? '',
       origem: item.origem,
       destino: item.destino,
-      dataInicio: toInputDateTime(item.dataInicio ?? item.dataSaida),
-      dataFim: toInputDateTime(item.dataFim ?? item.dataChegada),
-      distanciaKm: String(item.distanciaKm ?? item.kmPercorrida ?? ''),
-      custo: String(item.custo),
+      dataSaida: toInputDateTime(item.dataSaida ?? item.dataSaida),
+      dataChegada: toInputDateTime(item.dataChegada ?? item.dataChegada),
+      kmPercorrido: String(item.kmPercorrido ?? item.kmPercorrido ?? ''),
     });
     setDialogOpen(true);
   };
@@ -193,7 +185,7 @@ export function ViagensPage({ onLogout, onNavigate }: ViagensPageProps) {
   };
 
   const handleSave = async () => {
-    if (!form.origem || !form.destino || !form.dataInicio || !form.distanciaKm) {
+    if (!form.origem || !form.destino || !form.dataSaida || !form.kmPercorrido) {
       setError('Preencha os campos obrigatorios da viagem.');
       return;
     }
@@ -201,11 +193,11 @@ export function ViagensPage({ onLogout, onNavigate }: ViagensPageProps) {
     try {
       if (editingItem) {
         await api.patch(`${ENDPOINT}/${editingItem.id}`, {
-          dataSaida: toApiDateTime(form.dataInicio),
-          dataChegada: form.dataFim ? toApiDateTime(form.dataFim) : undefined,
+          dataSaida: toApiDateTime(form.dataSaida),
+          dataChegada: form.dataChegada ? toApiDateTime(form.dataChegada) : undefined,
           origem: form.origem.trim(),
           destino: form.destino.trim(),
-          kmPercorrida: Number(form.distanciaKm),
+          kmPercorrido: Number(form.kmPercorrido),
         });
         setFeedback('Viagem atualizada com sucesso.');
       } else {
@@ -216,11 +208,11 @@ export function ViagensPage({ onLogout, onNavigate }: ViagensPageProps) {
         }
         await api.post(ENDPOINT, {
           veiculoId: veiculoSelecionado.id,
-          dataSaida: toApiDateTime(form.dataInicio),
-          dataChegada: form.dataFim ? toApiDateTime(form.dataFim) : undefined,
+          dataSaida: toApiDateTime(form.dataSaida),
+          dataChegada: form.dataChegada ? toApiDateTime(form.dataChegada) : undefined,
           origem: form.origem.trim(),
           destino: form.destino.trim(),
-          kmPercorrida: Number(form.distanciaKm),
+          kmPercorrido: Number(form.kmPercorrido),
         });
         setFeedback('Viagem criada com sucesso.');
       }
@@ -296,9 +288,9 @@ export function ViagensPage({ onLogout, onNavigate }: ViagensPageProps) {
                   <TableCell>{item.veiculo?.placa ?? `ID ${item.veiculoId ?? item.veiculo?.id ?? '-'}`}</TableCell>
                   <TableCell>{item.origem}</TableCell>
                   <TableCell>{item.destino}</TableCell>
-                  <TableCell>{formatDate(item.dataInicio ?? item.dataSaida)}</TableCell>
-                  <TableCell>{formatDate(item.dataFim ?? item.dataChegada)}</TableCell>
-                  <TableCell>{item.distanciaKm ?? item.kmPercorrida ?? 0}</TableCell>
+                  <TableCell>{formatDate(item.dataSaida ?? item.dataSaida)}</TableCell>
+                  <TableCell>{formatDate(item.dataChegada ?? item.dataChegada)}</TableCell>
+                  <TableCell>{item.kmPercorrido ?? item.kmPercorrido ?? 0}</TableCell>
                   <TableCell align="right">
                     <IconButton color="primary" onClick={() => openEdit(item)}>
                       <EditRoundedIcon />
@@ -373,8 +365,8 @@ export function ViagensPage({ onLogout, onNavigate }: ViagensPageProps) {
             <TextField
               label="Data e hora de saida"
               type="datetime-local"
-              value={form.dataInicio}
-              onChange={(event) => setForm((prev) => ({ ...prev, dataInicio: event.target.value }))}
+              value={form.dataSaida}
+              onChange={(event) => setForm((prev) => ({ ...prev, dataSaida: event.target.value }))}
               InputLabelProps={{ shrink: true }}
               fullWidth
               required
@@ -382,16 +374,16 @@ export function ViagensPage({ onLogout, onNavigate }: ViagensPageProps) {
             <TextField
               label="Data e hora de chegada"
               type="datetime-local"
-              value={form.dataFim}
-              onChange={(event) => setForm((prev) => ({ ...prev, dataFim: event.target.value }))}
+              value={form.dataChegada}
+              onChange={(event) => setForm((prev) => ({ ...prev, dataChegada: event.target.value }))}
               InputLabelProps={{ shrink: true }}
               fullWidth
             />
             <TextField
               label="Distancia (km)"
               type="number"
-              value={form.distanciaKm}
-              onChange={(event) => setForm((prev) => ({ ...prev, distanciaKm: event.target.value }))}
+              value={form.kmPercorrido}
+              onChange={(event) => setForm((prev) => ({ ...prev, kmPercorrido: event.target.value }))}
               fullWidth
               required
             />
