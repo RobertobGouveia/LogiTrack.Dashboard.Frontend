@@ -2,6 +2,8 @@
 
 Aplicacao frontend em React para visualizacao de indicadores de logistica, com tela de login e dashboard de metricas consumidas de um backend em Java + Spring Boot.
 
+🔗 Acesse o projeto: https://logi-track-dashboard-frontend.vercel.app/
+
 ## Instrucoes para configurar e rodar localmente
 
 ### 1) Pre-requisitos
